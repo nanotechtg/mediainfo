@@ -3,3 +3,4 @@ tgcrypto
 mediainfo
 aiohttp
 aiofiles
+ffmpeg
