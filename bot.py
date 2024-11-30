@@ -5,9 +5,9 @@ from pyrogram.handlers import MessageHandler
 from mediainfo import gen_mediainfo  # Import the media info generation function
 
 # Configuration for the bot
-API_ID = "9311834"  # Replace with your API ID
-API_HASH = "bb92ce8a66904f227f332bd4e5a75623"  # Replace with your API hash
-BOT_TOKEN = "7535237196:AAFg8B3ifmFstifOxE2gnJJu4NZTFAuVYPE"  # Replace with your bot token
+API_ID = ""  # Replace with your API ID
+API_HASH = ""  # Replace with your API hash
+BOT_TOKEN = ""  # Replace with your bot token
 
 # Create and configure the bot instance
 bot = Client("media_info_bot", bot_token=BOT_TOKEN, api_id=API_ID, api_hash=API_HASH)
