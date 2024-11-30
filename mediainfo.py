@@ -8,26 +8,26 @@ import subprocess
 from os import path as ospath
 from subprocess import CalledProcessError
 from aiofiles.os import path as aiopath, mkdir, remove as aioremove
-from config import MEDIAINFO_PATH
 
 
-# Helper function to execute shell commands (like mediainfo)
+# Helper function to execute shell commands
 def cmd_exec(command):
     try:
         result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
         return result.decode()
-    except CalledProcessError as e:
+    except subprocess.CalledProcessError as e:
         return str(e.output.decode())
 
-
 # Function to generate media information (using mediainfo)
-async def gen_mediainfo(message, link=None, media=None, msg=None):
+async def gen_mediainfo(message, link=None, media=None, msg=None, bot=None):
     temp_send = await message.reply("Generating MediaInfo...")
-    output_file = None  # Initialize output_file to avoid UnboundLocalError
+
+    # Initialize output_file as None to avoid UnboundLocalError
+    output_file = None
 
     try:
         # Create a folder to store media files temporarily
-        path = MEDIAINFO_PATH
+        path = "Mediainfo/"
         if not await aiopath.isdir(path):
             await mkdir(path)
 
@@ -46,12 +46,23 @@ async def gen_mediainfo(message, link=None, media=None, msg=None):
         # Handle media sent directly to the bot
         elif media:
             des_path = ospath.join(path, media.file_name)
+
+            # Debugging check to see if file is received
+            if not media:
+                await temp_send.edit("No media received. Please try again with a valid file.")
+                return
+
             if media.file_size <= 50000000:
                 await msg.download(ospath.join(os.getcwd(), des_path))
             else:
-                async for chunk in bot.stream_media(media, limit=5):
+                async for chunk in bot.stream_media(media, limit=5):  # Use bot here
                     async with aiofiles.open(des_path, "ab") as f:
                         await f.write(chunk)
+
+        # Ensure media exists
+        if not os.path.exists(des_path):
+            await temp_send.edit("Failed to download or process the file. Please try again.")
+            return
 
         # Execute mediainfo to get media details
         stdout = cmd_exec(f'mediainfo "{des_path}"')
