@@ -1,20 +1,19 @@
 # bot.py
 
 from pyrogram import Client, filters
-from pyrogram.types import Message
 from pyrogram.handlers import MessageHandler
-from config import API_ID, API_HASH, BOT_TOKEN
-from mediainfo import gen_mediainfo
+from mediainfo import gen_mediainfo  # Import the media info generation function
 
+# Configuration for the bot
+API_ID = "9311834"  # Replace with your API ID
+API_HASH = "bb92ce8a66904f227f332bd4e5a75623"  # Replace with your API hash
+BOT_TOKEN = "7535237196:AAFg8B3ifmFstifOxE2gnJJu4NZTFAuVYPE"  # Replace with your bot token
 
-# Initialize Pyrogram client
+# Create and configure the bot instance
 bot = Client("media_info_bot", bot_token=BOT_TOKEN, api_id=API_ID, api_hash=API_HASH)
 
-
-# Command Handlers
-
-# Start command handler: Sends welcome message and instructions
-async def start(_, message: Message):
+# Function to handle the /start command
+async def start(_, message):
     start_message = (
         "Welcome to the MediaInfo bot! 🤖\n\n"
         "Send a media file or a download link to get detailed media information.\n"
@@ -25,9 +24,8 @@ async def start(_, message: Message):
     )
     await message.reply(start_message)
 
-
-# Mediainfo command handler: Generates media info based on user input
-async def mediainfo(_, message: Message):
+# Function to handle /mediainfo command
+async def mediainfo(_, message):
     reply = message.reply_to_message
     help_msg = (
         "<b>By replying to media:</b>"
@@ -35,25 +33,28 @@ async def mediainfo(_, message: Message):
         "\n\n<b>By sending download link:</b>"
         f"\n<code>/mediainfo link </code>"
     )
-    # Check if the user provided a valid link or media
+    
+    # Ensure there's media or a link to process
     if len(message.command) > 1 or (reply and reply.text):
         link = reply.text if reply else message.command[1]
-        await gen_mediainfo(message, link=link)
+        await gen_mediainfo(message, link=link, bot=bot)  # Pass bot to gen_mediainfo
     elif reply:
         if file := next(
             (i for i in [reply.document, reply.video, reply.audio] if i), None
         ):
-            await gen_mediainfo(message, media=file, msg=reply)
+            await gen_mediainfo(message, media=file, msg=reply, bot=bot)  # Pass bot to gen_mediainfo
         else:
             await message.reply(help_msg)
     else:
         await message.reply(help_msg)
 
-
 # Add handlers for commands
 bot.add_handler(MessageHandler(mediainfo, filters=filters.command("mediainfo")))
 bot.add_handler(MessageHandler(start, filters=filters.command("start")))
 
-# Run the bot
-if __name__ == "__main__":
+# Function to run the bot
+def run_bot():
     bot.run()
+
+if __name__ == "__main__":
+    run_bot()
